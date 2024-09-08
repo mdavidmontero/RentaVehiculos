@@ -1,4 +1,4 @@
-"use client";
+import { FormEditCarProps } from "./FormEditCar.types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -20,48 +20,46 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { formSchema } from "./FormAddCar.form";
+import { formSchema } from "./FormEditCar.form";
 import { UploadButton } from "@/utils/uploadthing";
 import { useState } from "react";
-import { FormAddCarProps } from "./FormAddCar.types";
+
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-
-export function FormAddCar(props: FormAddCarProps) {
-  const { setOpenDialog } = props;
+export function FormEditCar(props: FormEditCarProps) {
   const { toast } = useToast();
   const [photoUploaded, setPhotoUploaded] = useState(false);
   const router = useRouter();
+  const { carData, setOpenDialog } = props;
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      cv: "",
-      transmission: "",
-      people: "",
-      photo: "",
-      engine: "",
-      type: "",
-      priceDay: "",
-      isPublish: false,
+      name: carData.name,
+      cv: carData.cv,
+      transmission: carData.transmission,
+      people: carData.people,
+      photo: carData.photo,
+      engine: carData.engine,
+      type: carData.type,
+      priceDay: carData.priceDay,
+      isPublish: carData.isPublish ? carData.isPublish : false,
     },
   });
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setOpenDialog(false);
-
     try {
-      await axios.post(`/api/car`, values);
-      toast({
-        title: "Car Created ",
-      });
+      await axios.patch(`/api/car/${carData.id}/form`, values);
+      toast({ title: "Car edited" });
       router.refresh();
     } catch (error) {
       toast({
-        title: "Something wen wrong",
+        title: "Something wont wrong",
+        description: "Error al actualizar el coche",
         variant: "destructive",
       });
     }
   };
+
   const { isValid } = form.formState;
   return (
     <Form {...form}>
@@ -244,7 +242,7 @@ export function FormAddCar(props: FormAddCarProps) {
         </div>
 
         <Button type="submit" className="w-full mt-5" disabled={!isValid}>
-          Crear Car
+          Edit Car
         </Button>
       </form>
     </Form>
