@@ -1,10 +1,27 @@
-export default function DashBoardPage() {
+import { db } from "@/lib/db";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import { ListCars } from "./components/ListCars";
+
+export default async function DashBoardPage() {
+  const { userId } = auth();
+  if (!userId) {
+    return redirect("/");
+  }
+  const cars = await db.car.findMany({
+    where: {
+      isPublish: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
   return (
     <div>
       <div className="flex justify-between">
         <h2 className="text-2xl font-bold">List of cars</h2>
       </div>
-      <p>Listado de Coches</p>
+      <ListCars cars={cars} />
     </div>
   );
 }
